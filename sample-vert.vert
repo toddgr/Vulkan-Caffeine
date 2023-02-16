@@ -18,7 +18,7 @@ layout( std140, set = 1, binding = 0 ) uniform sceneBuf
 	mat4		uView;
 	mat4		uSceneOrient;
 	vec4		uLightPos;			// x, y, z
-	vec4		uLightColor;			// r, g, b
+	vec4		uLightColor;		// r, g, b
 	vec4		uLightKaKdKs;		// ka, kd, ks
 	float	uTime;
 } Scene;
@@ -32,7 +32,6 @@ layout( std140, set = 2, binding = 0 ) uniform objectBuf
 } Object; 
 
 
-//************************P4
 struct atom
 {
 	vec3 position;
@@ -43,7 +42,6 @@ layout( std140, set = 4, binding = 0 ) uniform moleculeBuf
 {
 	atom		atoms[24];
 };
-//************************P4
 
 layout( location = 0 ) in vec3 aVertex;
 layout( location = 1 ) in vec3 aNormal;
@@ -80,30 +78,31 @@ main( )
 	vec4 eyePos = vec4( 0., 0., 0., 1. );					// eye position after applying the viewing matrix
 	vE = normalize( eyePos.xyz -  ECposition.xyz );         // vector from the point to the eye
 
-
-//************************P4
-	int atomicNumber = atoms[?].atomicNumber;
-	vec3 position = atoms[?].position;
+	int index = gl_InstanceIndex % 24;
+	
+	int atomicNumber = atoms[index].atomicNumber;
+	vec3 position = atoms[index].position;
 	float radius;
 
-	if( atomicNumber == 1 )
+	if( atomicNumber == 1 ) // Hydrogen, white, radius 0.37
 	{
-		?
-		?
-	} else if( atomicNumber == 6 )
+		vColor = vec3(1., 1., 1.);
+		radius = 0.37;
+		
+	} else if( atomicNumber == 6 ) // Carbon, green, radius 0.77
 	{
-		?
-		?
+		vColor = vec3(0., 1., 0.);
+		radius = 0.77;
 	}
-	else if( atomicNumber == 7 )
+	else if( atomicNumber == 7 ) // Nitrogen, blue, radius 0.70
 	{
-		?
-		?
+		vColor = vec3(0., 0., 1.);
+		radius = 0.70;
 	}
-	else if( atomicNumber == 8 )
+	else if( atomicNumber == 8 ) // Oxygen, red, radius 0.66
 	{
-		?
-		?
+		vColor = vec3(1., 0., 0.);
+		radius = 0.66;	
 	}
 	else
 	{
@@ -115,5 +114,4 @@ main( )
 	bVertex.xyz *= radius;
 	bVertex.xyz += position;
 	gl_Position = PVM * vec4( bVertex, 1. );
-//************************P4
 }

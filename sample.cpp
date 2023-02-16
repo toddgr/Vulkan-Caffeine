@@ -225,9 +225,8 @@ typedef struct MyTexture
 } MyTexture;
 
 
-//************************P4
+// To create a sphere *!*
 #include "vkuSphere.h"
-//************************P4
 
 
 // bmp file headers:
@@ -324,11 +323,11 @@ VkDataBuffer 			DataBuffer;
 VkImage				DepthStencilImage;
 VkImageView			DepthStencilImageView;
 VkDescriptorPool		DescriptorPool;
-//************************P4
+// Descriptor sets *!*
 #define NUMDS			5
 VkDescriptorSetLayout		DescriptorSetLayouts[NUMDS];
 VkDescriptorSet			DescriptorSets[NUMDS];
-//************************P4
+
 //VkDebugReportCallbackEXT	ErrorCallback = (VkDebugReportCallbackEXT *)VK_NULL_HANDLE;
 VkDebugReportCallbackEXT	ErrorCallback = 0;
 VkEvent				Event;
@@ -371,10 +370,8 @@ uint32_t			Width;
 
 //#include "SampleVertexData.cpp"
 
-//************************P4
+// Atom and molecule data *!*
 #include "molecule.cpp"
-//************************P4
-
 
 
 // *************************************
@@ -388,18 +385,16 @@ struct objectBuf		Object;				// cpu struct to hold matrix information
 struct sporadicBuf		Sporadic;			// cpu struct to hold miscellaneous information information
 int				Mode;				// 0 = use colors, 1 = use textures, ...
 MyBuffer			MySceneUniformBuffer;
-MyTexture			MyPuppyTexture;			// the cute puppy texture struct
+MyTexture			MySwirlTexture;			// the cool swirly texture struct
 MyBuffer			MySporadicUniformBuffer;
 MyBuffer			MyObjectUniformBuffer;
 MyBuffer			MyVertexDataBuffer;
 MyBuffer			MyJustIndexDataBuffer;
 MyBuffer			MyJustVertexDataBuffer;
-//************************P4
-MyBuffer			MyAtomsUniformBuffer;		// array of atom structs
-//************************P4
+MyBuffer			MyAtomsUniformBuffer;		// array of atom structs *!*
 bool				NeedToExit;			// true means the program should exit
 int				NumInstances;			// # of instances to render
-int				NumRenders;			// how many times the render loop has been called
+int				NumRenders;				// how many times the render loop has been called
 bool				Paused;				// true means don't animate
 float				Scale;				// scaling factor
 double				Time;
@@ -574,29 +569,17 @@ InitGraphics( )
 	Init05UniformBuffer( sizeof(Object),   	&MyObjectUniformBuffer );
 	Fill05DataBuffer( MyObjectUniformBuffer,	(void *) &Object );
 
-//************************P4
+// Initialize the atoms uniform buffer *!*
 	Init05UniformBuffer( sizeof(Atoms),   	&MyAtomsUniformBuffer );
 	Fill05DataBuffer( MyAtomsUniformBuffer,	(void *) &Atoms );
-//************************P4
-
-//************************P4
 	MyVertexDataBuffer = vkuSphere( 1., 20, 20 );
-//************************P4
 
-	//Init05MyVertexDataBuffer(  sizeof(VertexData), &MyVertexDataBuffer );
-	//Fill05DataBuffer( MyVertexDataBuffer,			(void *) VertexData );
-
-	//Init05MyVertexDataBuffer(  sizeof(JustVertexData), &MyJustVertexDataBuffer );
-	//Fill05DataBuffer( MyJustVertexDataBuffer,               (void *) JustVertexData );
-
-	//Init05MyIndexDataBuffer(  sizeof(JustIndexData), &MyJustIndexDataBuffer );
-	//Fill05DataBuffer( MyJustIndexDataBuffer,                (void *) JustIndexData );
 
 	Init06CommandPools();
 	Init06CommandBuffers();
 
-	Init07TextureSampler( &MyPuppyTexture );
-	Init07TextureBufferAndFillFromBmpFile("puppy1.bmp", &MyPuppyTexture);
+	Init07TextureSampler( &MySwirlTexture );
+	Init07TextureBufferAndFillFromBmpFile("swirl.bmp", &MySwirlTexture);
 
 	Init08Swapchain( );
 
@@ -640,7 +623,7 @@ Init01Instance( )
 		vai.apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
 
-	// figure out what instance layers are wanted and available:
+		// figure out what instance layers are wanted and available:
 
 		std::vector<char *> instanceLayersWantedAndAvailable;
 
@@ -2541,10 +2524,9 @@ Init13DescriptorSetPool()
 		vdps[2].descriptorCount = 1;
 		vdps[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		vdps[3].descriptorCount = 1;
-//************************P4
+		// Buffer 4 -- atom buffer *!*
 		vdps[4].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		vdps[4].descriptorCount = 1;
-//************************P4
 
 #ifdef CHOICES
 VkDescriptorType:
@@ -2571,10 +2553,10 @@ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT
 VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT
 #endif
 
-//************************P4
+		// Descriptor pool info is based on the number of descriptor sets we have *!*
 		vdpci.maxSets = NUMDS;
 		vdpci.poolSizeCount = NUMDS;
-//************************P4
+
 		vdpci.pPoolSizes = &vdps[0];
 
 	result = vkCreateDescriptorPool(LogicalDevice, IN &vdpci, PALLOCATOR, OUT &DescriptorPool);
@@ -2672,15 +2654,16 @@ Init13DescriptorSetLayouts( )
 		TexSamplerSet[0].stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
 		TexSamplerSet[0].pImmutableSamplers = (VkSampler *)nullptr;
 
-//************************P4
-	//DS #4:
+	//DS #4: *!*
 	VkDescriptorSetLayoutBinding		AtomsSet[1];
 		AtomsSet[0].binding            = 0;
-		AtomsSet[0].descriptorType     = ?? what type of buffer does this need to be ??
+		// *!*
+		AtomsSet[0].descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		AtomsSet[0].descriptorCount    = 1;
-		AtomsSet[0].stageFlags         = ?? what type of buffer does this need to be ??
+		// Need to flag the vertex and fragment shaders to make sure position, color, are correctly aligned *!*
+		AtomsSet[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT; 
 		AtomsSet[0].pImmutableSamplers = (VkSampler *)nullptr;
-//************************P4
+
 
 #ifdef CHOICES
 VkDescriptorType:
@@ -2725,14 +2708,13 @@ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT
 		vdslc3.bindingCount = 1;
 		vdslc3.pBindings = &TexSamplerSet[0];
 
-//************************P4
+	// Atoms set *!*
 	VkDescriptorSetLayoutCreateInfo			vdslc4;
-		vdslc4.sType = ?? what type of structure is this ??
+	vdslc4.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		vdslc4.pNext = nullptr;
 		vdslc4.flags = 0;
 		vdslc4.bindingCount = 1;
 		vdslc4.pBindings = &AtomsSet[0];
-//************************P4
 
 	result = vkCreateDescriptorSetLayout( LogicalDevice, &vdslc0, PALLOCATOR, OUT &DescriptorSetLayouts[0] );
 	REPORT( "vkCreateDescriptorSetLayout - 0" );
@@ -2746,10 +2728,9 @@ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT
 	result = vkCreateDescriptorSetLayout( LogicalDevice, &vdslc3, PALLOCATOR, OUT &DescriptorSetLayouts[3] );
 	REPORT( "vkCreateDescriptorSetLayout - 3" );
 
-//************************P4
+// Atoms set *!*
 	result = vkCreateDescriptorSetLayout( LogicalDevice, &vdslc4, PALLOCATOR, OUT &DescriptorSetLayouts[4] );
 	REPORT( "vkCreateDescriptorSetLayout - 4" );
-//************************P4
 
 	return result;
 }
@@ -2772,9 +2753,9 @@ Init13DescriptorSets( )
 		vdsai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		vdsai.pNext = nullptr;
 		vdsai.descriptorPool = DescriptorPool;
-//************************P4
+		// *!*
 		vdsai.descriptorSetCount = NUMDS;
-//************************P4
+
 		vdsai.pSetLayouts = DescriptorSetLayouts;
 
 
@@ -2797,16 +2778,15 @@ Init13DescriptorSets( )
 		vdbi2.range = sizeof(Object);
 
 	VkDescriptorImageInfo				vdii3;
-		vdii3.sampler   = MyPuppyTexture.texSampler;
-		vdii3.imageView = MyPuppyTexture.texImageView;
+		vdii3.sampler   = MySwirlTexture.texSampler;
+		vdii3.imageView = MySwirlTexture.texImageView;
 		vdii3.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-//************************P4
+	// Create buffer info for the atoms set *!*
 	VkDescriptorBufferInfo				vdbi4;
 		vdbi4.buffer = MyAtomsUniformBuffer.buffer;
 		vdbi4.offset = 0;	// bytes
 		vdbi4.range = sizeof(Atoms);
-//************************P4
 
 	VkWriteDescriptorSet				vwds0;
 		// ds 0:
@@ -2860,8 +2840,7 @@ Init13DescriptorSets( )
 		vwds3.pImageInfo = &vdii3;
 		vwds3.pTexelBufferView = (VkBufferView *)nullptr;
 
-//************************P4
-		// ds 4:
+		// ds 4: *!*
 	VkWriteDescriptorSet				vwds4;
 		vwds4.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		vwds4.pNext = nullptr;
@@ -2873,7 +2852,6 @@ Init13DescriptorSets( )
 		vwds4.pBufferInfo = &vdbi4;
 		vwds4.pImageInfo = (VkDescriptorImageInfo *)nullptr;
 		vwds4.pTexelBufferView = (VkBufferView *)nullptr;
-//************************P4
 
 	uint32_t copyCount = 0;
 
@@ -2883,9 +2861,8 @@ Init13DescriptorSets( )
 	vkUpdateDescriptorSets( LogicalDevice, 1, IN &vwds1, IN copyCount, (VkCopyDescriptorSet *)nullptr );
 	vkUpdateDescriptorSets( LogicalDevice, 1, IN &vwds2, IN copyCount, (VkCopyDescriptorSet *)nullptr );
 	vkUpdateDescriptorSets( LogicalDevice, 1, IN &vwds3, IN copyCount, (VkCopyDescriptorSet *)nullptr );
-//************************P4
+	// Atoms set *!*
 	vkUpdateDescriptorSets( LogicalDevice, 1, IN &vwds4, IN copyCount, (VkCopyDescriptorSet *)nullptr );
-//************************P4
 
 	return VK_SUCCESS;
 }
@@ -2905,9 +2882,8 @@ Init14GraphicsPipelineLayout( )
 		vplci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		vplci.pNext = nullptr;
 		vplci.flags = 0;
-//************************P4
-		vplci.setLayoutCount = NUMDS;
-//************************P4
+		vplci.setLayoutCount = NUMDS;  // *!*
+
 		vplci.pSetLayouts = &DescriptorSetLayouts[0];
 		vplci.pushConstantRangeCount = 0;
 		vplci.pPushConstantRanges = (VkPushConstantRange *)nullptr;
@@ -2991,9 +2967,8 @@ Init14GraphicsVertexFragmentPipeline( VkShaderModule vertexShader, VkShaderModul
 		vplci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		vplci.pNext = nullptr;
 		vplci.flags = 0;
-//************************P4
+		// Number of descriptor sets *!*
 		vplci.setLayoutCount = NUMDS;
-//************************P4
 		vplci.pSetLayouts = DescriptorSetLayouts;
 		vplci.pushConstantRangeCount = 0;
 		vplci.pPushConstantRanges = (VkPushConstantRange *)nullptr;
@@ -4056,9 +4031,8 @@ RenderScene( )
 #endif
 
 	
-//************************P4
+	// Bind descriptor sets to command buffers *!*
 	vkCmdBindDescriptorSets( CommandBuffers[nextImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicsPipelineLayout, 0, NUMDS, DescriptorSets, 0, (uint32_t *)nullptr );
-//************************P4
 														    // dynamic offset count, dynamic offsets
 	//vkCmdBindPushConstants( CommandBuffers[nextImageIndex], PipelineLayout, VK_SHADER_STAGE_ALL, offset, size, void *values );
 
@@ -4075,15 +4049,15 @@ RenderScene( )
 
 	const uint32_t vertexCount = (int)MyVertexDataBuffer.size / sizeof(struct vertex);
     //const uint32_t indexCount  = sizeof(JustIndexData)  / sizeof(JustIndexData[0]);
-//************************P4
+	// Number of sphere instances we implement *!*
     const uint32_t instanceCount = NUMATOMS;
-//************************P4
+
     const uint32_t firstVertex = 0;
     const uint32_t firstIndex = 0;
     const uint32_t firstInstance = 0;
     const uint32_t vertexOffset  = 0;
 
-       	vkCmdDraw( CommandBuffers[nextImageIndex], vertexCount, instanceCount, firstVertex, firstInstance );
+    vkCmdDraw( CommandBuffers[nextImageIndex], vertexCount, instanceCount, firstVertex, firstInstance );
 
 	vkCmdEndRenderPass( CommandBuffers[nextImageIndex] );
 
@@ -4237,9 +4211,7 @@ void
 UpdateScene( )
 {
 
-//************************P4
-	Fill05DataBuffer( MyAtomsUniformBuffer, (void *) &Atoms );	// really only need to do this once...
-//************************P4
+	Fill05DataBuffer( MyAtomsUniformBuffer, (void *) &Atoms );	// really only need to do this once... *!*
 
 	// change the sporadic stuff:
 
