@@ -2,9 +2,9 @@
 
 This project demonstrates Vulkan instancing by implementing a sphere object to create the caffeine molecular structure.
 
-The video demonstrating this vertex data can be found here: 
+![Program screenshot](projectScreenshot.JPG)
 
-![Program screenshot](project1screenshots.JPG)
+The type of molecule is structured by radius and color, provided in the `molecule.cpp` file. The video demonstrating this project can be found here: https://youtu.be/qhHmLKId7do
 
 ---
 
